@@ -5,6 +5,7 @@ import * as posenet from '@tensorflow-models/posenet';
 const PoseDetection = () => {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
+  const recognition = useRef(null);
 
   useEffect(() => {
     const loadPosenet = async () => {
@@ -43,7 +44,32 @@ const PoseDetection = () => {
       detectPose();
     };
 
+    const setupVoiceCommand = () => {
+      if ('webkitSpeechRecognition' in window) {
+        recognition.current = new webkitSpeechRecognition();
+        recognition.current.continuous = true;
+        recognition.current.lang = 'en-US';
+
+        recognition.current.onstart = () => {
+          console.log('Voice recognition started');
+        };
+
+        recognition.current.onresult = (event) => {
+          const transcript = event.results[event.results.length - 1][0].transcript.trim();
+          console.log('Voice Command:', transcript);
+          if (transcript.toLowerCase() === 'start yoga') {
+            alert('Yoga session started');
+          }
+        };
+
+        recognition.current.start();
+      } else {
+        console.log('Speech Recognition not supported in this browser');
+      }
+    };
+
     loadPosenet();
+    setupVoiceCommand();
   }, []);
 
   return (
